@@ -23,7 +23,7 @@ const matrixToolkit = {
     return array;
   },
 
-  // TODO 检查指定位置可以填写数字 n
+  // 检查指定位置可以填写数字 n
   checkFillable(matrix, n, rowIndex, colIndex) {
     const row = matrix[rowIndex];
     const column = this.makeRow().map((v, i) => matrix[i][colIndex]);
