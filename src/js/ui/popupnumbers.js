@@ -15,8 +15,6 @@ module.exports = class PopupNumbers {
           $cell.removeClass("mark2")
             .addClass("mark1");
         }
-
-        return;
       } else if ($span.hasClass("mark2")) {
         if ($cell.hasClass("mark2")) {
           $cell.removeClass("mark2");
@@ -24,15 +22,10 @@ module.exports = class PopupNumbers {
           $cell.removeClass("mark1")
             .addClass("mark2");
         }
-        return;
       } else if ($span.hasClass("empty")) {
         $cell.text(0)
           .addClass("empty");
-        // 取消数字填写 ，取消mark
-        return;
       } else {
-
-        // 1-9, 回填数字
         $cell.removeClass("empty")
           .text($span.text());
       }
