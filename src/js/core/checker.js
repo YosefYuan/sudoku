@@ -31,7 +31,7 @@ const Toolkit = require("./toolkit");
 // 输入：matrix ,用户完成的数独数据， 9 x 9
 // 处理： 对 matrix 行、列 、宫进行检查， 并填写marks
 // 输出： 检查是否成功、marks
-class Checker {
+module.exports = class Checker {
   constructor(matrix) {
     this._matrix = matrix;
     this._matrixMarks = Toolkit.matrix.makeMatrix(true);

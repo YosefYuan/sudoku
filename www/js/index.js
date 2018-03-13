@@ -189,7 +189,7 @@ module.exports = function () {
 
 
 var Grid = __webpack_require__(2);
-var PopupNumbers = __webpack_require__(5);
+var PopupNumbers = __webpack_require__(6);
 
 var grid = new Grid($("#container"));
 grid.build();
@@ -197,6 +197,24 @@ grid.layout();
 
 var popupNumbers = new PopupNumbers($("#popupNumbers"));
 grid.bindPopup(popupNumbers);
+
+$("#check").on("click", function (e) {
+  if (grid.check()) {
+    alert("成功");
+  };
+});
+
+$("#reset").on("click", function (e) {
+  grid.reset();
+});
+
+$("#clear").on("click", function (e) {
+  grid.clear();
+});
+
+$("#rebuild").on("click", function (e) {
+  grid.rebuild();
+});
 
 /***/ }),
 /* 2 */
@@ -212,6 +230,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // 生成九宫格
 var Toolkit = __webpack_require__(0);
 var Sudoku = __webpack_require__(3);
+var Checker = __webpack_require__(5);
 
 var Grid = function () {
   function Grid(container) {
@@ -252,11 +271,75 @@ var Grid = function () {
         "font-size": width < 32 ? width / 2 + "px" : ""
       });
     }
+
+    /* 检查用户解密的结果，成功则进行提示，失败显示错误位置的标记 */
+
+  }, {
+    key: "check",
+    value: function check() {
+      // 从界面获取需要检查的数据
+      var data = this._$container.children().map(function (rowIndex, div) {
+        return $(div).children().map(function (colIndex, span) {
+          return parseInt($(span).text()) || 0;
+        });
+      }).toArray().map(function ($data) {
+        return $data.toArray();
+      });
+
+      console.log(data);
+
+      var checker = new Checker(data);
+      if (checker.check()) {
+        return true;
+      };
+
+      // 检查不成功，进行标记
+      var marks = checker.matrixMarks;
+      this._$container.children().each(function (rowIndex, div) {
+        $(div).children().each(function (colIndex, span) {
+          var $span = $(span);
+          if ($span.is(".fixed") || marks[rowIndex][colIndex]) {
+            $span.removeClass("error");
+          } else {
+            $span.addClass("error");
+          }
+        });
+      });
+    }
+
+    /* 重置当前迷盘到初始状态 */
+
+  }, {
+    key: "reset",
+    value: function reset() {
+      this._$container.find("span:not(.fixed)").removeClass("error mark1 mark2").addClass("empty").text(0);
+    }
+
+    /* 清理错误标记 */
+
+  }, {
+    key: "clear",
+    value: function clear() {
+      this._$container.find("span.error").removeClass("error");
+    }
+
+    /* 重建新的迷盘，开始新一局 */
+
+  }, {
+    key: "rebuild",
+    value: function rebuild() {
+      this._$container.empty();
+      this.build();
+      this.layout();
+    }
   }, {
     key: "bindPopup",
     value: function bindPopup(popupNumbers) {
       this._$container.on("click", "span", function (e) {
         var $cell = $(e.target);
+        if ($cell.is(".fixed")) {
+          return;
+        }
         popupNumbers.popup($cell);
       });
     }
@@ -402,6 +485,136 @@ module.exports = function () {
 
 /***/ }),
 /* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// 检查数独解决方案
+function checkArray(array) {
+  var length = array.length;
+  var marks = new Array(length);
+  marks.fill(true);
+
+  for (var i = 0; i < length - 1; i++) {
+    if (!marks[i]) {
+      continue;
+    }
+
+    var v = array[i];
+    // 是否有效，0 - 无效, 1-9 有效 
+    if (!v) {
+      marks[i] = false;
+      continue;
+    }
+
+    // 是否有重复 i + 1 ~ 9 ,是否和 i 位置的数据重复
+    for (var j = i + 1; j < length; j++) {
+      if (v === array[j]) {
+        marks[i] = marks[j] = false;
+      }
+    }
+  }
+  return marks;
+}
+
+var Toolkit = __webpack_require__(0);
+
+// 输入：matrix ,用户完成的数独数据， 9 x 9
+// 处理： 对 matrix 行、列 、宫进行检查， 并填写marks
+// 输出： 检查是否成功、marks
+module.exports = function () {
+  function Checker(matrix) {
+    _classCallCheck(this, Checker);
+
+    this._matrix = matrix;
+    this._matrixMarks = Toolkit.matrix.makeMatrix(true);
+  }
+
+  _createClass(Checker, [{
+    key: "check",
+    value: function check() {
+      this.checkRows();
+      this.checkCols();
+      this.checkBoxes();
+
+      // 检查是否成功
+      this._success = this._matrixMarks.every(function (row) {
+        return row.every(function (mark) {
+          return mark;
+        });
+      });
+      return this._success;
+    }
+  }, {
+    key: "checkRows",
+    value: function checkRows() {
+      for (var rowIndex = 0; rowIndex < 9; rowIndex++) {
+        var row = this._matrix[rowIndex];
+        var marks = checkArray(row);
+
+        for (var colIndex = 0; colIndex < marks.length; colIndex++) {
+          if (!marks[colIndex]) {
+            this._matrixMarks[rowIndex][colIndex] = false;
+          }
+        }
+      }
+    }
+  }, {
+    key: "checkCols",
+    value: function checkCols() {
+      for (var colIndex = 0; colIndex < 9; colIndex++) {
+        var cols = [];
+        for (var rowIndex = 0; rowIndex < 9; rowIndex++) {
+          cols[rowIndex] = this._matrix[rowIndex][colIndex];
+        }
+
+        var marks = checkArray(cols);
+        for (var _rowIndex = 0; _rowIndex < marks.length; _rowIndex++) {
+          if (!marks[_rowIndex]) {
+            this._matrixMarks[_rowIndex][colIndex] = false;
+          }
+        }
+      }
+    }
+  }, {
+    key: "checkBoxes",
+    value: function checkBoxes() {
+      for (var boxIndex = 0; boxIndex < 9; boxIndex++) {
+        var boxes = Toolkit.box.getBoxCells(this._matrix, boxIndex);
+        var marks = checkArray(boxes);
+        for (var cellIndex = 0; cellIndex < 9; cellIndex++) {
+          if (!marks[cellIndex]) {
+            var _Toolkit$box$convertF = Toolkit.box.convertFromBoxIndex(boxIndex, cellIndex),
+                rowIndex = _Toolkit$box$convertF.rowIndex,
+                colIndex = _Toolkit$box$convertF.colIndex;
+
+            this._matrixMarks[rowIndex][colIndex] = false;
+          }
+        }
+      }
+    }
+  }, {
+    key: "matrixMarks",
+    get: function get() {
+      return this._matrixMarks;
+    }
+  }, {
+    key: "isSuccess",
+    get: function get() {
+      return this._success;
+    }
+  }]);
+
+  return Checker;
+}();
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
