@@ -1,7 +1,9 @@
-const Toolkit = require('./toolkit.js');
+import Toolkit from "./toolkit";
 // 生成数独解决方案
 
-module.exports = class Generator {
+export class Generator {
+  matrix: number[][];
+  orders: number[][];
 
   generate() {
     while (!this.internalGenerate()) {
@@ -22,11 +24,11 @@ module.exports = class Generator {
     }
     return true;
   }
-  fillNumber(n) {
+  private fillNumber(n: number) {
     return this.fillRow(n, 0);
   }
 
-  fillRow(n, rowIndex) {
+  private fillRow(n: number, rowIndex: number) {
     if (rowIndex > 8) {
       return true;
     }
@@ -57,3 +59,5 @@ module.exports = class Generator {
     return false;
   }
 }
+
+export default Generator;

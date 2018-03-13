@@ -3,9 +3,12 @@
 // 1.生成完成的解决方案： Generator
 // 2.随机去除部分数据： 按比例
 
-const Generator = require("./generator");
+import Generator from "./generator";
 
-module.exports = class Sudoku {
+export class Sudoku {
+  solutionMatrix: number[][];
+  puzzleMatrix: number[][];
+
   constructor() {
     //  生成完成的结局方案
     const generator = new Generator();
@@ -13,7 +16,7 @@ module.exports = class Sudoku {
     this.solutionMatrix = generator.matrix;
   }
 
-  make(level = 5) {
+  make(level:number = 5) {
     //  const shouldRid = Math.random() * 9 <level;
     //  生产迷盘
     this.puzzleMatrix = this.solutionMatrix.map(row => {
@@ -21,3 +24,5 @@ module.exports = class Sudoku {
     });
   }
 }
+
+export default Sudoku;

@@ -5,23 +5,27 @@ function resolve(dir) {
 }
 module.exports = {
   entry: {
-    index: path.resolve(__dirname, './js/index.js')
+    index: path.resolve(__dirname, './js/index')
   },
   output: {
     filename: "[name].js"
   },
   devtool: "source-map",
   resolve: {
-    extensions: [".js"]
+    extensions: [".ts"]
   },
   module: {
-    loaders: [{
-      test: /\.js$/,
-      loader: "babel-loader",
-      exclude: path.resolve(__dirname, 'node_modules'),
-      query: {
-        presets: ["es2015"]
-      }
+    rules: [{
+      test: /\.ts$/,
+      use: [{
+          loader: "babel-loader",
+          options: {
+            presets: ["es2015"]
+          }
+        },
+        "ts-loader"
+      ],
+      exclude: /node_modules/
     }]
   }
 }

@@ -1,10 +1,12 @@
 // 生成九宫格
-const Toolkit = require("../core/toolkit.js");
-const Sudoku = require("../core/sudoku.js");
-const Checker = require("../core/checker");
+import Sudoku from "../core/sudoku";
+import Checker from "../core/checker";
+import PopupNumbers from "./popupnumbers";
 
 class Grid {
-  constructor(container) {
+  private _$container: JQuery; // @types/jquery
+
+  constructor(container: JQuery) {
     this._$container = container;
   }
   build() {
@@ -40,7 +42,7 @@ class Grid {
       .height(width)
       .css({
         "line-height": `${width}px`,
-        "font-size": width < 32 ? `${width/2}px` : ""
+        "font-size": width < 32 ? `${width / 2}px` : ""
       })
   }
 
@@ -48,14 +50,12 @@ class Grid {
   check() {
     // 从界面获取需要检查的数据
     const data = this._$container.children()
-      .map((rowIndex, div) => {
-        return $(div).children()
-          .map((colIndex, span) => parseInt($(span).text()) || 0);
-      })
       .toArray()
-      .map($data => $data.toArray());
-
-    console.log(data);
+      .map((div: HTMLElement): number[] => {
+        return $(div).children()
+          .toArray()
+          .map(span => parseInt($(span).text(), 10) || 0);
+      });
 
     const checker = new Checker(data);
     if (checker.check()) {
@@ -88,7 +88,7 @@ class Grid {
   /* 清理错误标记 */
   clear() {
     this._$container.find("span.error")
-    .removeClass("error");
+      .removeClass("error");
   }
 
   /* 重建新的迷盘，开始新一局 */
@@ -98,10 +98,10 @@ class Grid {
     this.layout();
   }
 
-  bindPopup(popupNumbers) {
+  bindPopup(popupNumbers: PopupNumbers) {
     this._$container.on("click", "span", e => {
       const $cell = $(e.target);
-      if($cell.is(".fixed")) {
+      if ($cell.is(".fixed")) {
         return;
       }
       popupNumbers.popup($cell);
@@ -109,4 +109,5 @@ class Grid {
   }
 }
 
-module.exports = Grid;
+export { Grid };
+export default Grid;
